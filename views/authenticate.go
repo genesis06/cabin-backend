@@ -1,0 +1,65 @@
+package views
+
+import (
+	"cabin-backend/database"
+	"cabin-backend/models"
+	"cabin-backend/utils"
+	"time"
+
+	log "github.com/Sirupsen/logrus"
+	"github.com/gin-gonic/gin"
+)
+
+type AuthenticationSchema struct {
+	Username string
+	Password string
+}
+
+func Authenticate(c *gin.Context) {
+	var requestUser AuthenticationSchema
+	var token map[string]string
+	token = make(map[string]string)
+
+	err := c.BindJSON(&requestUser)
+	if err != nil {
+		c.JSON(400, gin.H{"message": "Bad request"})
+		return
+	}
+
+	err = utils.AuthenticateUser(requestUser.Username, requestUser.Password)
+	if err != nil {
+		log.Error(err)
+		c.JSON(401, gin.H{"message": "Unauthorized"})
+		return
+	}
+	if err != nil {
+		log.Error(err)
+		c.JSON(401, gin.H{"message": "Unauthorized"})
+		return
+	}
+
+	var user models.User
+
+	err = database.DB.QueryRow("SELECT username, first_name, last_name, password FROM users WHERE username = $1", requestUser.Username).Scan(&user.Username, &user.FirstName, &user.LastName, &user.Password)
+	if err != nil {
+		log.Debug(err)
+		c.AbortWithError(500, err)
+		return
+	}
+
+	claims := make(map[string]interface{})
+	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
+	claims["username"] = user.Username
+	claims["first_name"] = user.FirstName
+	claims["last_name"] = user.LastName
+	tokenString, err := utils.GenerateToken(claims)
+
+	if err != nil {
+		c.JSON(500, gin.H{"message": "Could not generate token"})
+		log.Warning(err)
+		return
+	}
+
+	token["token"] = tokenString
+	c.JSON(200, token)
+}

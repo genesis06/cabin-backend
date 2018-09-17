@@ -1,0 +1,10 @@
+[database]
+port = "5432"
+host = "localhost"
+username = "postgres"
+password = "Camila17"
+database = "cabinas-tu-y-yo"
+sslmode = "disable"
+
+[server]
+port = 8082
