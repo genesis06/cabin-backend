@@ -47,11 +47,39 @@ func Authenticate(c *gin.Context) {
 		return
 	}
 
+	roles, err := database.DB.Query("SELECT r.name FROM users u,user_roles ur, roles r WHERE u.id = ur.fk_user AND r.id = ur.fk_role AND u.username = $1", user.Username)
+
+	if err != nil {
+		log.Fatal(err)
+		c.AbortWithError(500, err)
+		return
+	}
+	defer roles.Close()
+
+	rolesArray := []string{}
+
+	for roles.Next() {
+		role := ""
+		err := roles.Scan(&role)
+		if err != nil {
+			log.Fatal(err)
+			c.AbortWithError(500, err)
+			return
+		}
+		rolesArray = append(rolesArray, role)
+		log.Println(role)
+	}
+	err = roles.Err()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	claims := make(map[string]interface{})
 	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
 	claims["username"] = user.Username
 	claims["first_name"] = user.FirstName
 	claims["last_name"] = user.LastName
+	claims["roles"] = rolesArray
 	tokenString, err := utils.GenerateToken(claims)
 
 	if err != nil {

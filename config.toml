@@ -8,3 +8,6 @@ sslmode = "disable"
 
 [server]
 port = 8082
+
+[jwt]
+secret = "MyC4b1nS3cr3t"
