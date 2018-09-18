@@ -25,18 +25,18 @@ func GetEngine() *gin.Engine {
 	})
 
 	router.POST("/authenticate", views.Authenticate)
-	/*	router.POST("/subscribe", views.Subscribe)
-		v1 := router.Group("/api/aaa/v1", utils.CheckJWTToken())
-		{
-			v1.GET("/users", views.GetUsers)
-			v1.POST("/users", views.CreateUser)
-			v1.GET("/roles", views.GetRoles)
-			v1.POST("/roles", views.CreateRole)
-			v1.POST("/accounting", views.CreateLog)
-			v1.GET("/items", views.GetItems)
-			v1.POST("/items", views.CreateItem)
-		}
-		users := v1.Group("/users")
+	//	router.POST("/subscribe", views.Subscribe)
+	v1 := router.Group("/api/cabin/v1", utils.CheckJWTToken())
+	{
+		//	v1.GET("/users", views.GetUsers)
+		v1.POST("/users", views.CreateUser)
+		//	v1.GET("/roles", views.GetRoles)
+		//	v1.POST("/roles", views.CreateRole)
+		//	v1.POST("/accounting", views.CreateLog)
+		//	v1.GET("/items", views.GetItems)
+		//	v1.POST("/items", views.CreateItem)
+	}
+	/*	users := v1.Group("/users")
 		{
 			users.GET("/:id", views.GetUser)
 			users.DELETE("/:id", views.DeleteUser)

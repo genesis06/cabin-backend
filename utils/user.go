@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	log "github.com/Sirupsen/logrus"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // AuthenticateUser is ...
@@ -32,8 +33,8 @@ func AuthenticateUser(username string, password string) error {
 		return err
 	}
 
-	if password != passwordHash {
-		err := fmt.Errorf(`Incorrect password`)
+	err = bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(password))
+	if err != nil {
 		log.Debug(err)
 		return err
 	}
