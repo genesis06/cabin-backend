@@ -52,7 +52,7 @@ func CheckJWTToken() gin.HandlerFunc {
 				c.AbortWithError(400, errors.New("Expired token"))
 				return
 			} else {
-				c.AbortWithError(400, errors.New("Couldn't handle this token"))
+				c.AbortWithError(400, ve)
 				return
 			}
 		} else {

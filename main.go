@@ -1,8 +1,8 @@
 package main
 
 import (
-	"app/utils"
 	"cabin-backend/database"
+	"cabin-backend/utils"
 	"cabin-backend/views"
 	"fmt"
 
@@ -25,10 +25,12 @@ func GetEngine() *gin.Engine {
 	})
 
 	router.POST("/authenticate", views.Authenticate)
+	router.GET("/api/cabin/v1/cabins", views.GetCabins)
+	router.PUT("/api/cabin/v1/cabins", views.UpdateCabin)
 	//	router.POST("/subscribe", views.Subscribe)
 	v1 := router.Group("/api/cabin/v1", utils.CheckJWTToken())
 	{
-		//	v1.GET("/users", views.GetUsers)
+		//v1.GET("/cabins", views.GetCabins)
 		v1.POST("/users", views.CreateUser)
 		//	v1.GET("/roles", views.GetRoles)
 		//	v1.POST("/roles", views.CreateRole)
@@ -111,5 +113,5 @@ func main() {
 	defer db.Close()
 	gin.SetMode(gin.ReleaseMode)
 	router := GetEngine()
-	router.Run(":8002") // listen and serve on 0.0.0.0:8080
+	router.Run(":8082") // listen and serve on 0.0.0.0:8080
 }
