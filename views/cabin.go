@@ -103,7 +103,7 @@ func CreateRent(c *gin.Context) {
 	tx, err := database.DB.Begin()
 
 	var rentID int
-	_ = tx.QueryRow("INSERT INTO rents( check_in, check_out, observations, necesary_repairs, fk_cabin, fk_contracted_time, total) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id", rent.CheckIn, rent.CheckOut, rent.Observations, rent.NecessaryRepairs, rent.CabinID, contractedTimeID, price).Scan(&rentID)
+	_ = tx.QueryRow("INSERT INTO rents( observations, necesary_repairs, fk_cabin, fk_contracted_time, total) VALUES ($1, $2, $3, $4, $5) RETURNING id", rent.Observations, rent.NecessaryRepairs, rent.CabinID, contractedTimeID, price).Scan(&rentID)
 	if err != nil {
 		log.Println("ERRORRR 1")
 		tx.Rollback()
