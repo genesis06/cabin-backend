@@ -25,58 +25,62 @@ func GetEngine() *gin.Engine {
 	})
 
 	router.POST("/authenticate", views.Authenticate)
-	router.GET("/api/cabin/v1/cabins", views.GetCabins)
-	router.PUT("/api/cabin/v1/cabins", views.UpdateCabin)
+
 	//	router.POST("/subscribe", views.Subscribe)
-	v1 := router.Group("/api/cabin/v1", utils.CheckJWTToken())
+	v1 := router.Group("/api/cabin/v1")
 	{
-		//v1.GET("/cabins", views.GetCabins)
 		v1.POST("/users", views.CreateUser)
+		v1.GET("/cabins", views.GetCabins)
+		v1.POST("/rents", views.CreateRent)
 		//	v1.GET("/roles", views.GetRoles)
 		//	v1.POST("/roles", views.CreateRole)
 		//	v1.POST("/accounting", views.CreateLog)
 		//	v1.GET("/items", views.GetItems)
 		//	v1.POST("/items", views.CreateItem)
 	}
-	/*	users := v1.Group("/users")
-		{
-			users.GET("/:id", views.GetUser)
-			users.DELETE("/:id", views.DeleteUser)
-			users.PUT("/:id", views.UpdateUser)
-			users.GET("/:id/roles", views.GetUserRoles)
-			users.POST("/:id/roles", views.AssociateUserRoles)
-			users.DELETE("/:id/roles/:role", views.DeleteUserRoles)
-		}
-		roles := v1.Group("/roles")
-		{
-			roles.GET("/:id", views.GetRole)
-			roles.DELETE("/:id", views.DeleteRole)
-			roles.PUT("/:id", views.UpdateRole)
-			roles.GET("/:id/items", views.GetItemRoles)
-			roles.POST("/:id/items", views.CreateItemRole)
-			roles.DELETE("/:id/items/:item", views.DeleteItemRole)
-		}
-		items := v1.Group("/items")
-		{
-			items.GET("/:id", views.GetItem)
-			items.PUT("/:id", views.UpdateItem)
-			items.DELETE("/:id", views.DeleteItem)
-		}
+	cabins := v1.Group("/cabins")
+	{
+		cabins.PUT("/:id", views.UpdateCabin)
+	}
+	/*users := v1.Group("/users")
+	{
+		users.GET("/:id", views.GetUser)
+		users.DELETE("/:id", views.DeleteUser)
+		users.PUT("/:id", views.UpdateUser)
+		users.GET("/:id/roles", views.GetUserRoles)
+		users.POST("/:id/roles", views.AssociateUserRoles)
+		users.DELETE("/:id/roles/:role", views.DeleteUserRoles)
+	}
+	roles := v1.Group("/roles")
+	{
+		roles.GET("/:id", views.GetRole)
+		roles.DELETE("/:id", views.DeleteRole)
+		roles.PUT("/:id", views.UpdateRole)
+		roles.GET("/:id/items", views.GetItemRoles)
+		roles.POST("/:id/items", views.CreateItemRole)
+		roles.DELETE("/:id/items/:item", views.DeleteItemRole)
+	}
+	items := v1.Group("/items")
+	{
+		items.GET("/:id", views.GetItem)
+		items.PUT("/:id", views.UpdateItem)
+		items.DELETE("/:id", views.DeleteItem)
+	}
 
-		recovery := v1.Group("/recovery")
-		{
-			recovery.PUT("/:id", views.ChangePassword)
-			//items.PUT("/:id", views.RecoverPassword)
-		}
+	recovery := v1.Group("/recovery")
+	{
+		recovery.PUT("/:id", views.ChangePassword)
+		//items.PUT("/:id", views.RecoverPassword)
+	}
 
-		byname := v1.Group("/ByName")
-		{
-			byname.GET("roles/:name", views.GetRoleByName)
-			byname.GET("roles/:name/items", views.GetItemRolesByName)
-		}
+	byname := v1.Group("/ByName")
+	{
+		byname.GET("roles/:name", views.GetRoleByName)
+		byname.GET("roles/:name/items", views.GetItemRolesByName)
+	}
 
-		router.POST(viper.GetString("app.beurl")+"/recovery/password", views.ForgotPassword)
-		router.POST(viper.GetString("app.beurl")+"/recovery/sign-up", views.SignUp)
+	router.POST(viper.GetString("app.beurl")+"/recovery/password", views.ForgotPassword)
+	router.POST(viper.GetString("app.beurl")+"/recovery/sign-up", views.SignUp)
 	*/
 	return router
 

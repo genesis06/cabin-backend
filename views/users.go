@@ -14,6 +14,7 @@ import (
 	// "github.com/davecgh/go-spew/spew"
 )
 
+// fix with tx, add roles
 func CreateUser(c *gin.Context) {
 	var user models.User
 	err := c.Bind(&user)
@@ -34,7 +35,7 @@ func CreateUser(c *gin.Context) {
 	}
 
 	tx, err := database.DB.Begin()
-	stmt, err := database.DB.Prepare("INSERT INTO users (username, first_name, last_name, password, status) VALUES ($1, $2, $3, $4, $5)")
+	stmt, err := tx.Prepare("INSERT INTO users (username, first_name, last_name, password, status) VALUES ($1, $2, $3, $4, $5)")
 	if err != nil {
 		tx.Rollback()
 		log.Error(err)
