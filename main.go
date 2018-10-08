@@ -29,6 +29,7 @@ func GetEngine() *gin.Engine {
 	//	router.POST("/subscribe", views.Subscribe)
 	v1 := router.Group("/api/cabin/v1")
 	{
+		v1.GET("/users", views.GetUsers)
 		v1.POST("/users", views.CreateUser)
 		v1.GET("/cabins", views.GetCabins)
 		v1.POST("/rents", views.CreateRent)
