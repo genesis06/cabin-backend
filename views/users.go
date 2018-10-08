@@ -100,6 +100,10 @@ func GetUsers(c *gin.Context) {
 				return
 			}
 			roles = append(roles, role)
+<<<<<<< HEAD
+=======
+			log.Println(roles)
+>>>>>>> 65bc4bf5e7ce435f6a593fa2c7cf36adb556370d
 		}
 		users[i].Roles = roles
 	}
