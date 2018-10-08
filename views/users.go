@@ -58,3 +58,51 @@ func CreateUser(c *gin.Context) {
 	//c.Header("Location", fmt.Sprintf("%s%s/%s", url, c.Request.URL, fmt.Sprintf("%d", lastID)))
 	c.Data(201, gin.MIMEJSON, nil)
 }
+
+func GetUsers(c *gin.Context) {
+	sqlString := "SELECT u.id, u.first_name, u.last_name, u.username, u.status, ws.start_time, ws.end_time FROM users u, work_shifts ws WHERE u.fk_work_switch = ws.id ORDER BY id ASC"
+
+	rows, err := database.DB.Query(sqlString)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	users := []*models.User{}
+	for rows.Next() {
+		var user models.User
+		err := rows.Scan(&user.ID, &user.FirstName, &user.LastName, &user.Username, &user.Status, &user.StartTime, &user.EndTime)
+		if err != nil {
+			log.Fatal(err)
+		}
+		users = append(users, &user)
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for i := 0; i < len(users); i++ {
+		roles := []models.Role{}
+
+		rows, err = database.DB.Query("SELECT r.id, r.name FROM roles r INNER JOIN user_roles ur ON r.id = ur.fk_role INNER JOIN users u ON ur.fk_user = u.id WHERE u.id = $1", users[i].ID)
+		if err != nil {
+			c.AbortWithError(500, err) //errors.New("Cant get rent"))
+			return
+		}
+
+		for rows.Next() {
+			role := models.Role{}
+			err := rows.Scan(&role.ID, &role.Name)
+			if err != nil {
+				log.Fatal(err)
+				c.AbortWithError(500, err)
+				return
+			}
+			roles = append(roles, role)
+		}
+		users[i].Roles = roles
+	}
+
+	c.JSON(200, users)
+}
