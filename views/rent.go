@@ -60,12 +60,13 @@ func CreateRent(c *gin.Context) {
 	c.Data(201, gin.MIMEJSON, nil)
 }
 
+// GetRent get last rent of cabin
 func GetRent(c *gin.Context) {
 	cabinID := c.Param("id")
 
 	var rent models.Rent
 
-	err := database.DB.QueryRow("SELECT r.id, r.check_in, r.observations, r.necesary_repairs, ct.quantity FROM rents r INNER JOIN contracted_times ct ON r.fk_contracted_time = ct.id INNER JOIN cabins c ON c.id = r.fk_cabin WHERE c.cabin_number = $1 ORDER BY r.id DESC LIMIT 1", cabinID).Scan(&rent.ID, &rent.CheckIn, &rent.Observations, &rent.NecessaryRepairs, &rent.ContratedTime)
+	err := database.DB.QueryRow("SELECT r.id, r.fk_cabin, r.check_in, r.observations, r.necesary_repairs, ct.quantity FROM rents r INNER JOIN contracted_times ct ON r.fk_contracted_time = ct.id INNER JOIN cabins c ON c.id = r.fk_cabin WHERE c.cabin_number = $1 ORDER BY r.id DESC LIMIT 1", cabinID).Scan(&rent.ID, &rent.CabinID, &rent.CheckIn, &rent.Observations, &rent.NecessaryRepairs, &rent.ContratedTime)
 	if err != nil {
 		c.AbortWithError(500, err) //errors.New("Cant get rent"))
 		return
@@ -94,4 +95,42 @@ func GetRent(c *gin.Context) {
 	rent.Vehicules = vehicules
 
 	c.JSON(200, rent)
+}
+
+// Update observations and necessary repairs
+func UpdateRent(c *gin.Context) {
+	var rent models.Rent
+	rentID := c.Param("id")
+
+	err := c.BindJSON(&rent)
+	if err != nil {
+		log.Println(err)
+		c.AbortWithError(http.StatusBadRequest, errors.New("Bad Json"))
+		return
+	}
+
+	tx, err := database.DB.Begin()
+	stmt, err := database.DB.Prepare("UPDATE rents SET observations=$1, necesary_repairs=$2 WHERE id = $3;")
+	if err != nil {
+		tx.Rollback()
+		log.Error(err)
+		c.Header("Content-Type", "application/json; charset=utf-8")
+		c.AbortWithError(400, err)
+
+		return
+	}
+
+	_, err = stmt.Exec(rent.Observations, rent.NecessaryRepairs, rentID)
+	if err != nil {
+		tx.Rollback()
+		log.Error(err)
+		c.Header("Content-Type", "application/json; charset=utf-8")
+		c.AbortWithError(400, err)
+		return
+	}
+
+	tx.Commit()
+	//url := location.Get(c)
+	//c.Header("Location", fmt.Sprintf("%s%s/%s", url, c.Request.URL, fmt.Sprintf("%d", lastID)))
+	c.Data(204, gin.MIMEJSON, nil)
 }
