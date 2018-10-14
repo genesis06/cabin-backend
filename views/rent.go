@@ -134,3 +134,48 @@ func UpdateRent(c *gin.Context) {
 	//c.Header("Location", fmt.Sprintf("%s%s/%s", url, c.Request.URL, fmt.Sprintf("%d", lastID)))
 	c.Data(204, gin.MIMEJSON, nil)
 }
+
+func PostCheckOut(c *gin.Context) {
+	var rent models.Rent
+	cabinID := c.Param("id")
+
+	err := c.BindJSON(&rent)
+	if err != nil {
+		log.Println(err)
+		c.AbortWithError(http.StatusBadRequest, errors.New("Bad Json"))
+		return
+	}
+
+	var rentID int
+
+	err = database.DB.QueryRow("SELECT id FROM rents WHERE fk_cabin = $1 ORDER BY id DESC LIMIT 1", cabinID).Scan(&rentID)
+	if err != nil {
+		c.AbortWithError(500, err) //errors.New("Cant get rent"))
+		return
+	}
+
+	tx, err := database.DB.Begin()
+	stmt, err := database.DB.Prepare("UPDATE rents SET check_out = $1 WHERE id = $2;")
+	if err != nil {
+		tx.Rollback()
+		log.Error(err)
+		c.Header("Content-Type", "application/json; charset=utf-8")
+		c.AbortWithError(400, err)
+
+		return
+	}
+
+	_, err = stmt.Exec(rent.CheckOut, rentID)
+	if err != nil {
+		tx.Rollback()
+		log.Error(err)
+		c.Header("Content-Type", "application/json; charset=utf-8")
+		c.AbortWithError(400, err)
+		return
+	}
+
+	tx.Commit()
+	//url := location.Get(c)
+	//c.Header("Location", fmt.Sprintf("%s%s/%s", url, c.Request.URL, fmt.Sprintf("%d", lastID)))
+	c.Data(204, gin.MIMEJSON, nil)
+}
