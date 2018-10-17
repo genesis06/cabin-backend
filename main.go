@@ -52,7 +52,7 @@ func GetEngine() *gin.Engine {
 	{
 		rents.GET("/cabins/:id", views.GetRent)
 		rents.PUT("/:id", views.UpdateRent)
-
+		rents.PUT("/:id/lost_stuff", views.PostLostStuff)
 	}
 	/*users := v1.Group("/users")
 	{

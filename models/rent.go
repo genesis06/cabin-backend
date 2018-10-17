@@ -9,4 +9,9 @@ type Rent struct {
 	Vehicules        []Vehicule `json:"vehicules" binding:"required"`
 	Observations     string     `json:"observations"`
 	NecessaryRepairs string     `json:"necessary_repairs"`
+	LostStuff        string     `json:"lost_stuff"`
+}
+
+type LostStuff struct {
+	Description string `json:"description" binding:"required"`
 }
