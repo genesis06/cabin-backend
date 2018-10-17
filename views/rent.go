@@ -136,15 +136,17 @@ func UpdateRent(c *gin.Context) {
 }
 
 func PostCheckOut(c *gin.Context) {
-	var rent models.Rent
+	var cabinCheckout models.CabinCheckout
 	cabinID := c.Param("id")
 
-	err := c.BindJSON(&rent)
+	err := c.BindJSON(&cabinCheckout)
 	if err != nil {
 		log.Println(err)
 		c.AbortWithError(http.StatusBadRequest, errors.New("Bad Json"))
 		return
 	}
+
+	log.Println(cabinCheckout)
 
 	var rentID int
 
@@ -165,7 +167,7 @@ func PostCheckOut(c *gin.Context) {
 		return
 	}
 
-	_, err = stmt.Exec(rent.CheckOut, rentID)
+	_, err = stmt.Exec(cabinCheckout.CheckOut, rentID)
 	if err != nil {
 		tx.Rollback()
 		log.Error(err)
