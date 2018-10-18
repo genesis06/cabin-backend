@@ -60,7 +60,7 @@ func CreateUser(c *gin.Context) {
 }
 
 func GetUsers(c *gin.Context) {
-	sqlString := "SELECT u.id, u.first_name, u.last_name, u.username, u.status, ws.start_time, ws.end_time FROM users u, work_shifts ws WHERE u.fk_work_switch = ws.id ORDER BY id ASC"
+	sqlString := "SELECT u.id, u.first_name, u.last_name, u.username, u.status, ws.start_time, ws.end_time FROM users u, work_shifts_type ws WHERE u.fk_work_shifts_type = ws.id ORDER BY id ASC"
 
 	rows, err := database.DB.Query(sqlString)
 	if err != nil {
