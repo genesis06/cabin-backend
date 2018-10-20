@@ -36,6 +36,7 @@ func GetEngine() *gin.Engine {
 		v1.GET("/items", views.GetSaleItems)
 		v1.POST("/sales", views.CreateSale)
 		v1.POST("/workShifts", views.CreateWorkShift)
+		v1.GET("/workShifts", views.GetWorkShift)
 
 		//	v1.GET("/roles", views.GetRoles)
 		//	v1.POST("/roles", views.CreateRole)
