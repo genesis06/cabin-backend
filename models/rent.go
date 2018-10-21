@@ -15,3 +15,12 @@ type Rent struct {
 type LostStuff struct {
 	Description string `json:"description" binding:"required"`
 }
+
+type RentLostStuff struct {
+	ID            int         `json:"id"`
+	CheckIn       string      `json:"check_in"`
+	CheckOut      interface{} `json:"check_out"`
+	CabinNumber   string      `json:"cabin_number"`
+	ContratedTime int         `json:"contracted_time"`
+	LostStuff     interface{} `json:"lost_stuff"`
+}

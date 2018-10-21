@@ -74,10 +74,10 @@ func UpdateWorkShift(c *gin.Context) {
 func GetWorkShifts(c *gin.Context) {
 	limit := c.Query("limit")
 
-	sqlString := "SELECT ws.id, u.username, u.first_name, u.last_name, ws.money_received, ws.money_delivered, ws.datetime FROM work_shifts ws INNER JOIN users u ON u.id = ws.fk_user ORDER BY ws.id"
+	sqlString := "SELECT ws.id, u.username, u.first_name, u.last_name, ws.money_received, ws.money_delivered, ws.datetime FROM work_shifts ws INNER JOIN users u ON u.id = ws.fk_user ORDER BY ws.id DESC "
 
 	if limit != "" {
-		sqlString += "DESC LIMIT " + limit
+		sqlString += "LIMIT " + limit
 	}
 
 	log.Println(sqlString)

@@ -10,6 +10,39 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func GetRents(c *gin.Context) {
+	limit := c.Query("limit")
+
+	sqlString := "SELECT r.id, c.cabin_number, r.check_in, r.check_out, ct.quantity, r.lost_stuff FROM rents r INNER JOIN contracted_times ct ON ct.id = r.fk_contracted_time INNER JOIN cabins c ON c.id = r.fk_cabin ORDER BY check_in DESC "
+
+	if limit != "" {
+		sqlString += "LIMIT " + limit
+	}
+
+	log.Println(sqlString)
+
+	rows, err := database.DB.Query(sqlString)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	rents := []*models.RentLostStuff{}
+	for rows.Next() {
+		var rent models.RentLostStuff
+		err := rows.Scan(&rent.ID, &rent.CabinNumber, &rent.CheckIn, &rent.CheckOut, &rent.ContratedTime, &rent.LostStuff)
+		if err != nil {
+			log.Fatal(err)
+		}
+		rents = append(rents, &rent)
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Fatal(err)
+	}
+	c.JSON(200, rents)
+}
+
 // Create rent
 func CreateRent(c *gin.Context) {
 	var rent models.Rent
