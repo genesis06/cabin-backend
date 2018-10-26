@@ -20,7 +20,7 @@ type RentLostStuff struct {
 	ID               int         `json:"id"`
 	CheckIn          string      `json:"check_in"`
 	CheckOut         interface{} `json:"check_out"`
-	Vehicules        []Vehicule  `json:"vehicules" binding:"required"`
+	Vehicules        []Vehicule  `json:"vehicules"`
 	CabinNumber      string      `json:"cabin_number"`
 	ContratedTime    int         `json:"contracted_time"`
 	Observations     string      `json:"observations"`

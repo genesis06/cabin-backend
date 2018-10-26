@@ -13,7 +13,7 @@ import (
 func GetRents(c *gin.Context) {
 	limit := c.Query("limit")
 
-	sqlString := "SELECT r.id, c.cabin_number, r.check_in, r.check_out, ct.quantity, r.observations, r.necesary_repairs, r.lost_stuff FROM rents r INNER JOIN contracted_times ct ON ct.id = r.fk_contracted_time INNER JOIN cabins c ON c.id = r.fk_cabin ORDER BY check_in DESC "
+	sqlString := "SELECT r.id, c.cabin_number, r.check_in, r.check_out, ct.quantity, r.observations, r.necesary_repairs, r.lost_stuff FROM rents r INNER JOIN contracted_times ct ON ct.id = r.fk_contracted_time INNER JOIN cabins c ON c.id = r.fk_cabin WHERE r.check_out IS NOT NULL ORDER BY check_in DESC "
 
 	if limit != "" {
 		sqlString += "LIMIT " + limit
@@ -243,21 +243,21 @@ func PostCheckOut(c *gin.Context) {
 }
 
 func PostLostStuff(c *gin.Context) {
-	var lostStuff models.LostStuff
+	var rent models.RentLostStuff
 
 	rentID := c.Param("id")
 
-	err := c.BindJSON(&lostStuff)
+	err := c.BindJSON(&rent)
 	if err != nil {
 		log.Println(err)
 		c.AbortWithError(http.StatusBadRequest, errors.New("Bad Json"))
 		return
 	}
 
-	log.Println(lostStuff)
+	log.Println(rent)
 
 	tx, err := database.DB.Begin()
-	stmt, err := database.DB.Prepare("UPDATE rents SET lost_stuff = $1 WHERE id = $2;")
+	stmt, err := database.DB.Prepare("UPDATE rents SET lost_stuff = $1, observations = $2, necesary_repairs = $3 WHERE id = $4;")
 	if err != nil {
 		tx.Rollback()
 		log.Error(err)
@@ -266,7 +266,7 @@ func PostLostStuff(c *gin.Context) {
 
 		return
 	}
-	_, err = stmt.Exec(lostStuff.Description, rentID)
+	_, err = stmt.Exec(rent.LostStuff, rent.Observations, rent.NecessaryRepairs, rentID)
 	if err != nil {
 		tx.Rollback()
 		log.Error(err)
