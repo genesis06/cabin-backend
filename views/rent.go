@@ -13,7 +13,7 @@ import (
 func GetRents(c *gin.Context) {
 	limit := c.Query("limit")
 
-	sqlString := "SELECT r.id, c.cabin_number, r.check_in, r.check_out, ct.quantity, r.lost_stuff FROM rents r INNER JOIN contracted_times ct ON ct.id = r.fk_contracted_time INNER JOIN cabins c ON c.id = r.fk_cabin ORDER BY check_in DESC "
+	sqlString := "SELECT r.id, c.cabin_number, r.check_in, r.check_out, ct.quantity, r.observations, r.necesary_repairs, r.lost_stuff FROM rents r INNER JOIN contracted_times ct ON ct.id = r.fk_contracted_time INNER JOIN cabins c ON c.id = r.fk_cabin ORDER BY check_in DESC "
 
 	if limit != "" {
 		sqlString += "LIMIT " + limit
@@ -30,7 +30,7 @@ func GetRents(c *gin.Context) {
 	rents := []*models.RentLostStuff{}
 	for rows.Next() {
 		var rent models.RentLostStuff
-		err := rows.Scan(&rent.ID, &rent.CabinNumber, &rent.CheckIn, &rent.CheckOut, &rent.ContratedTime, &rent.LostStuff)
+		err := rows.Scan(&rent.ID, &rent.CabinNumber, &rent.CheckIn, &rent.CheckOut, &rent.ContratedTime, &rent.Observations, &rent.NecessaryRepairs, &rent.LostStuff)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -107,7 +107,7 @@ func GetRent(c *gin.Context) {
 
 	vehicules := []models.Vehicule{}
 
-	rows, err := database.DB.Query("SELECT v.v_type, v.license_plate FROM vehicules v INNER JOIN rents r ON r.id = v.fk_rent INNER JOIN cabins c ON c.id = r.fk_cabin WHERE r.id = $1", rent.ID)
+	rows, err := database.DB.Query("SELECT v.id, v.v_type, v.license_plate FROM vehicules v INNER JOIN rents r ON r.id = v.fk_rent INNER JOIN cabins c ON c.id = r.fk_cabin WHERE r.id = $1", rent.ID)
 	if err != nil {
 		c.AbortWithError(500, err) //errors.New("Cant get rent"))
 		return
@@ -115,7 +115,7 @@ func GetRent(c *gin.Context) {
 
 	for rows.Next() {
 		vehicule := models.Vehicule{}
-		err := rows.Scan(&vehicule.Type, &vehicule.LicensePlate)
+		err := rows.Scan(&vehicule.ID, &vehicule.Type, &vehicule.LicensePlate)
 		if err != nil {
 			log.Fatal(err)
 			c.AbortWithError(500, err)
@@ -160,6 +160,33 @@ func UpdateRent(c *gin.Context) {
 		c.Header("Content-Type", "application/json; charset=utf-8")
 		c.AbortWithError(400, err)
 		return
+	}
+
+	for _, vehicule := range rent.Vehicules {
+
+		if vehicule.ID == 0 {
+			log.Println("Insertó")
+			_, err = tx.Exec("INSERT INTO vehicules ( v_type, license_plate, fk_rent) VALUES ($1, $2, $3)", vehicule.Type, vehicule.LicensePlate, rentID)
+			if err != nil {
+				log.Println("ERRORRR 2")
+				tx.Rollback()
+				log.Println(err)
+				c.AbortWithError(http.StatusBadRequest, err)
+				return
+			}
+		} else {
+			log.Println("Actualizó")
+			_, err = tx.Exec("UPDATE vehicules SET v_type = $1, license_plate = $2 WHERE id = $3;", vehicule.Type, vehicule.LicensePlate, vehicule.ID)
+			if err != nil {
+				log.Println("ERRORRR 2")
+				tx.Rollback()
+				log.Println(err)
+				c.AbortWithError(http.StatusBadRequest, err)
+				return
+			}
+		}
+
+		/**/
 	}
 
 	tx.Commit()
