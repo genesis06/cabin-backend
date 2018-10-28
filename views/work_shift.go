@@ -30,7 +30,7 @@ func CreateWorkShift(c *gin.Context) {
 	log.Debug(userID)
 
 	tx, err := database.DB.Begin()
-	_, err = tx.Exec("INSERT INTO work_shifts(money_received, fk_user) VALUES ($1, $2);", workShift.MoneyReceived, userID)
+	_, err = tx.Exec("INSERT INTO work_shifts(money_received, datetime, fk_user) VALUES ($1, $2, $3);", workShift.MoneyReceived, workShift.DateTime, userID)
 	if err != nil {
 		log.Println("ERRORRR")
 		tx.Rollback()
