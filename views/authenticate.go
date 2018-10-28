@@ -55,20 +55,20 @@ func Authenticate(c *gin.Context) {
 		return
 	}
 	defer roles.Close()
-	/*
-		rolesArray := []string{}
 
-		for roles.Next() {
-			role := ""
-			err := roles.Scan(&role)
-			if err != nil {
-				log.Fatal(err)
-				c.AbortWithError(500, err)
-				return
-			}
-			rolesArray = append(rolesArray, role)
-			log.Println(role)
-		}*/
+	rolesArray := []string{}
+
+	for roles.Next() {
+		role := ""
+		err := roles.Scan(&role)
+		if err != nil {
+			log.Fatal(err)
+			c.AbortWithError(500, err)
+			return
+		}
+		rolesArray = append(rolesArray, role)
+		log.Println(role)
+	}
 	err = roles.Err()
 	if err != nil {
 		log.Fatal(err)
@@ -79,7 +79,7 @@ func Authenticate(c *gin.Context) {
 	claims["username"] = user.Username
 	claims["first_name"] = user.FirstName
 	claims["last_name"] = user.LastName
-	//claims["roles"] = rolesArray
+	claims["roles"] = rolesArray
 	tokenString, err := utils.GenerateToken(claims)
 
 	if err != nil {

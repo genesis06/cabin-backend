@@ -27,7 +27,7 @@ func GetEngine() *gin.Engine {
 	router.POST("/authenticate", views.Authenticate)
 
 	//	router.POST("/subscribe", views.Subscribe)
-	v1 := router.Group("/api/cabin/v1")
+	v1 := router.Group("/api/cabin/v1", utils.CheckJWTToken())
 	{
 		v1.GET("/users", views.GetUsers)
 		v1.POST("/users", views.CreateUser)
@@ -39,12 +39,6 @@ func GetEngine() *gin.Engine {
 		v1.POST("/workShifts", views.CreateWorkShift)
 		v1.GET("/workShifts", views.GetWorkShifts)
 		v1.GET("/report", views.GetReport)
-
-		//	v1.GET("/roles", views.GetRoles)
-		//	v1.POST("/roles", views.CreateRole)
-		//	v1.POST("/accounting", views.CreateLog)
-		//	v1.GET("/items", views.GetItems)
-		//	v1.POST("/items", views.CreateItem)
 	}
 	cabins := v1.Group("/cabins")
 	{
