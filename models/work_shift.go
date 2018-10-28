@@ -6,6 +6,7 @@ type WorkShift struct {
 	MoneyDelivered int    `json:"money_delivered"`
 	DateTime       string `json:"date_time"`
 	Username       string `json:"username" binding:"required"`
+	Notes          string `json:"notes"`
 }
 
 type UserWorkShift struct {
@@ -16,4 +17,5 @@ type UserWorkShift struct {
 	Username       string      `json:"username"`
 	FirstName      string      `json:"first_name"`
 	LastName       string      `json:"last_name"`
+	Notes          interface{} `json:"notes"`
 }

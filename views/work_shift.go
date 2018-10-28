@@ -57,7 +57,7 @@ func UpdateWorkShift(c *gin.Context) {
 	log.Println(workShift)
 
 	tx, err := database.DB.Begin()
-	_, err = tx.Exec("UPDATE work_shifts SET money_received = $1, money_delivered= $2, datetime= $3 WHERE id = $4;", workShift.MoneyReceived, workShift.MoneyDelivered, workShift.DateTime, workShiftID)
+	_, err = tx.Exec("UPDATE work_shifts SET money_received = $1, money_delivered= $2, datetime= $3, notes = $4 WHERE id = $5;", workShift.MoneyReceived, workShift.MoneyDelivered, workShift.DateTime, workShift.Notes, workShiftID)
 	if err != nil {
 		log.Println("ERRORRR")
 		tx.Rollback()
@@ -72,14 +72,23 @@ func UpdateWorkShift(c *gin.Context) {
 }
 
 func GetWorkShifts(c *gin.Context) {
-	limit := c.Query("limit")
+	//limit := c.Query("limit")
 
-	sqlString := "SELECT ws.id, u.username, u.first_name, u.last_name, ws.money_received, ws.money_delivered, ws.datetime FROM work_shifts ws INNER JOIN users u ON u.id = ws.fk_user ORDER BY ws.id DESC "
+	log.Println(c.Query("fromDate"))
+	log.Println(c.Query("toDate"))
 
-	if limit != "" {
-		sqlString += "LIMIT " + limit
+	sqlString := "SELECT ws.id, u.username, u.first_name, u.last_name, ws.money_received, ws.money_delivered, ws.datetime, ws.notes FROM work_shifts ws INNER JOIN users u ON u.id = ws.fk_user "
+
+	if c.Query("fromDate") != "" && c.Query("toDate") != "" {
+		sqlString = sqlString + "WHERE ws.datetime > '" + c.Query("fromDate") + "' and ws.datetime < '" + c.Query("toDate") + "' "
 	}
 
+	sqlString = sqlString + "ORDER BY ws.id DESC"
+	/*
+		if limit != "" {
+			sqlString += "LIMIT " + limit
+		}
+	*/
 	log.Println(sqlString)
 
 	rows, err := database.DB.Query(sqlString)
@@ -91,7 +100,7 @@ func GetWorkShifts(c *gin.Context) {
 	workShifts := []*models.UserWorkShift{}
 	for rows.Next() {
 		var workShift models.UserWorkShift
-		err := rows.Scan(&workShift.ID, &workShift.Username, &workShift.FirstName, &workShift.LastName, &workShift.MoneyReceived, &workShift.MoneyDelivered, &workShift.DateTime)
+		err := rows.Scan(&workShift.ID, &workShift.Username, &workShift.FirstName, &workShift.LastName, &workShift.MoneyReceived, &workShift.MoneyDelivered, &workShift.DateTime, &workShift.Notes)
 		if err != nil {
 			log.Fatal(err)
 		}
