@@ -1,6 +1,8 @@
 package views
 
 import (
+	"cabin-backend/database"
+	"cabin-backend/models"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -11,30 +13,29 @@ func GetVehicules(c *gin.Context) {
 	rentID := c.Param("id")
 
 	log.Println(rentID)
-	/*
-		tx, err := database.DB.Begin()
-		_ = tx.QueryRow("INSERT INTO sales(date) VALUES ($1) RETURNING id", sale.Date).Scan(&saleID)
 
+	sqlString := "SELECT id, v_type, license_plate FROM vehicules WHERE fk_rent = " + rentID
+
+	rows, err := database.DB.Query(sqlString)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	vehicules := []*models.Vehicule{}
+	for rows.Next() {
+		var vehicule models.Vehicule
+		err := rows.Scan(&vehicule.ID, &vehicule.Type, &vehicule.LicensePlate)
 		if err != nil {
-			log.Println("ERRORRR 1")
-			tx.Rollback()
-			log.Println(err)
-			c.AbortWithError(http.StatusBadRequest, err)
-			return
+			log.Fatal(err)
 		}
+		vehicules = append(vehicules, &vehicule)
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-		for _, articule := range sale.SaleArticules {
-			_, err = tx.Exec("INSERT INTO sale_item(fk_sale, fk_item, price, amount) VALUES ($1, $2, $3, $4)", saleID, articule.ArticuleID, articule.Price, articule.Amount)
-			if err != nil {
-				log.Println("ERRORRR 2")
-				tx.Rollback()
-				log.Println(err)
-				c.AbortWithError(http.StatusBadRequest, err)
-				return
-			}
-		}
-		tx.Commit()
+	c.JSON(200, vehicules)
 
-		c.Data(201, gin.MIMEJSON, nil)
-	*/
 }

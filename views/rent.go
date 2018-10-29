@@ -275,6 +275,33 @@ func PostLostStuff(c *gin.Context) {
 		return
 	}
 
+	for _, vehicule := range rent.Vehicules {
+
+		if vehicule.ID == 0 {
+			log.Println("Insertó")
+			_, err = tx.Exec("INSERT INTO vehicules ( v_type, license_plate, fk_rent) VALUES ($1, $2, $3)", vehicule.Type, vehicule.LicensePlate, rentID)
+			if err != nil {
+				log.Println("ERRORRR 2")
+				tx.Rollback()
+				log.Println(err)
+				c.AbortWithError(http.StatusBadRequest, err)
+				return
+			}
+		} else {
+			log.Println("Actualizó")
+			_, err = tx.Exec("UPDATE vehicules SET v_type = $1, license_plate = $2 WHERE id = $3;", vehicule.Type, vehicule.LicensePlate, vehicule.ID)
+			if err != nil {
+				log.Println("ERRORRR 2")
+				tx.Rollback()
+				log.Println(err)
+				c.AbortWithError(http.StatusBadRequest, err)
+				return
+			}
+		}
+
+		/**/
+	}
+
 	tx.Commit()
 	c.Data(204, gin.MIMEJSON, nil)
 }
