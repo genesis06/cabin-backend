@@ -120,6 +120,8 @@ func initializeApp() {
 	viper.BindEnv("database.database", "PG_DB")
 	viper.BindEnv("database.sslmode", "PG_SSL")
 
+	viper.BindEnv("server.port", "SERVER_PORT")
+
 	log.SetFormatter(&log.TextFormatter{ForceColors: true})
 	log.SetLevel(log.DebugLevel)
 
@@ -133,5 +135,5 @@ func main() {
 	defer db.Close()
 	gin.SetMode(gin.ReleaseMode)
 	router := GetEngine()
-	router.Run(":8082") // listen and serve on 0.0.0.0:8080
+	router.Run(fmt.Sprintf(":%s", viper.GetString("server.port"))) // listen and serve on 0.0.0.0:8080
 }
