@@ -175,14 +175,26 @@ func UpdateRent(c *gin.Context) {
 				return
 			}
 		} else {
-			log.Println("Actualizó")
-			_, err = tx.Exec("UPDATE vehicules SET v_type = $1, license_plate = $2 WHERE id = $3;", vehicule.Type, vehicule.LicensePlate, vehicule.ID)
-			if err != nil {
-				log.Println("ERRORRR 2")
-				tx.Rollback()
-				log.Println(err)
-				c.AbortWithError(http.StatusBadRequest, err)
-				return
+			if vehicule.Deleted == false {
+				log.Println("Actualizó")
+				_, err = tx.Exec("UPDATE vehicules SET v_type = $1, license_plate = $2 WHERE id = $3;", vehicule.Type, vehicule.LicensePlate, vehicule.ID)
+				if err != nil {
+					log.Println("ERRORRR 2")
+					tx.Rollback()
+					log.Println(err)
+					c.AbortWithError(http.StatusBadRequest, err)
+					return
+				}
+			} else {
+				log.Println("Eliminó")
+				_, err = tx.Exec("DELETE FROM vehicules WHERE id = $1;", vehicule.ID)
+				if err != nil {
+					log.Println("ERRORRR 2")
+					tx.Rollback()
+					log.Println(err)
+					c.AbortWithError(http.StatusBadRequest, err)
+					return
+				}
 			}
 		}
 
@@ -275,6 +287,7 @@ func PostLostStuff(c *gin.Context) {
 		return
 	}
 
+	log.Println(rent.Vehicules)
 	for _, vehicule := range rent.Vehicules {
 
 		if vehicule.ID == 0 {
@@ -288,15 +301,28 @@ func PostLostStuff(c *gin.Context) {
 				return
 			}
 		} else {
-			log.Println("Actualizó")
-			_, err = tx.Exec("UPDATE vehicules SET v_type = $1, license_plate = $2 WHERE id = $3;", vehicule.Type, vehicule.LicensePlate, vehicule.ID)
-			if err != nil {
-				log.Println("ERRORRR 2")
-				tx.Rollback()
-				log.Println(err)
-				c.AbortWithError(http.StatusBadRequest, err)
-				return
+			if vehicule.Deleted == false {
+				log.Println("Actualizó")
+				_, err = tx.Exec("UPDATE vehicules SET v_type = $1, license_plate = $2 WHERE id = $3;", vehicule.Type, vehicule.LicensePlate, vehicule.ID)
+				if err != nil {
+					log.Println("ERRORRR 2")
+					tx.Rollback()
+					log.Println(err)
+					c.AbortWithError(http.StatusBadRequest, err)
+					return
+				}
+			} else {
+				log.Println("Eliminó")
+				_, err = tx.Exec("DELETE FROM vehicules WHERE id = $1;", vehicule.ID)
+				if err != nil {
+					log.Println("ERRORRR 2")
+					tx.Rollback()
+					log.Println(err)
+					c.AbortWithError(http.StatusBadRequest, err)
+					return
+				}
 			}
+
 		}
 
 		/**/
