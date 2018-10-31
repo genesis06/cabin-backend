@@ -99,9 +99,17 @@ func GetRent(c *gin.Context) {
 
 	var rent models.Rent
 
-	err := database.DB.QueryRow("SELECT r.id, r.fk_cabin, r.check_in, r.observations, r.necesary_repairs, ct.quantity, r.lost_stuff FROM rents r INNER JOIN contracted_times ct ON r.fk_contracted_time = ct.id INNER JOIN cabins c ON c.id = r.fk_cabin WHERE c.cabin_number = $1 ORDER BY r.id DESC LIMIT 1", cabinID).Scan(&rent.ID, &rent.CabinID, &rent.CheckIn, &rent.Observations, &rent.NecessaryRepairs, &rent.ContratedTime, &rent.LostStuff)
+	err := database.DB.QueryRow("SELECT r.id, r.fk_cabin, r.check_in, r.check_out, r.observations, r.necesary_repairs, ct.quantity, r.lost_stuff FROM rents r INNER JOIN contracted_times ct ON r.fk_contracted_time = ct.id INNER JOIN cabins c ON c.id = r.fk_cabin WHERE c.cabin_number = $1 ORDER BY r.id DESC LIMIT 1", cabinID).Scan(&rent.ID, &rent.CabinID, &rent.CheckIn, &rent.CheckOut, &rent.Observations, &rent.NecessaryRepairs, &rent.ContratedTime, &rent.LostStuff)
 	if err != nil {
 		c.AbortWithError(500, err) //errors.New("Cant get rent"))
+		return
+	}
+
+	log.Println("CheckOut ")
+	log.Println(rent.CheckOut)
+
+	if rent.CheckOut != nil {
+		c.AbortWithError(409, errors.New("Doesn't exist rent on cabin"))
 		return
 	}
 
@@ -227,6 +235,22 @@ func PostCheckOut(c *gin.Context) {
 		c.AbortWithError(500, err) //errors.New("Cant get rent"))
 		return
 	}
+
+	var checkout interface{}
+
+	err = database.DB.QueryRow("SELECT check_out FROM rents WHERE id = $1", rentID).Scan(&checkout)
+	if err != nil {
+		c.AbortWithError(500, err) //errors.New("Cant get rent"))
+		return
+	}
+
+	if checkout != nil {
+		c.AbortWithError(409, errors.New("Doesn't exist rent on cabin"))
+		return
+	}
+
+	log.Println("checkout ")
+	log.Println(checkout)
 
 	tx, err := database.DB.Begin()
 	stmt, err := database.DB.Prepare("UPDATE rents SET check_out = $1 WHERE id = $2;")
