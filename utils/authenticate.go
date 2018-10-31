@@ -45,10 +45,13 @@ func CheckJWTToken() gin.HandlerFunc {
 			return
 		} else if ve, ok := err.(*jwt.ValidationError); ok {
 			if ve.Errors&jwt.ValidationErrorMalformed != 0 {
+				log.Println(ve.Errors)
+				log.Println(jwt.ValidationErrorMalformed)
 				c.AbortWithError(400, errors.New("Invalid token"))
 				return
 			} else if ve.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0 {
 				// Token is either expired or not active yet
+
 				c.AbortWithError(400, errors.New("Expired token"))
 				return
 			} else {
