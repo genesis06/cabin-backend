@@ -113,3 +113,29 @@ func GetWorkShifts(c *gin.Context) {
 	c.JSON(200, workShifts)
 
 }
+
+func UpdateWorkShiftType(c *gin.Context) {
+
+	var workShiftType models.WorkShiftType
+	err := c.BindJSON(&workShiftType)
+	if err != nil {
+		log.Println(err)
+		c.AbortWithError(http.StatusBadRequest, errors.New("Bad Json"))
+		return
+	}
+	log.Println(workShiftType)
+
+	tx, err := database.DB.Begin()
+	_, err = tx.Exec("UPDATE work_shifts_type SET start_time = $1, end_time = $2 WHERE id = $3;", workShiftType.StartTime, workShiftType.EndTime, workShiftType.ID)
+	if err != nil {
+		log.Println("ERRORRR")
+		tx.Rollback()
+		log.Println(err)
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	tx.Commit()
+
+	c.Data(204, gin.MIMEJSON, nil)
+}
