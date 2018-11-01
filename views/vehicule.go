@@ -3,7 +3,8 @@ package views
 import (
 	"cabin-backend/database"
 	"cabin-backend/models"
-	"log"
+
+	log "github.com/Sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
 )
@@ -21,6 +22,8 @@ func GetVehicules(c *gin.Context) {
 		log.Fatal(err)
 	}
 	defer rows.Close()
+
+	log.Debug("Get vehicules")
 
 	vehicules := []*models.Vehicule{}
 	for rows.Next() {

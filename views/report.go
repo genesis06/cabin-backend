@@ -35,6 +35,8 @@ func GetReport(c *gin.Context) {
 	}
 	defer rows.Close()
 
+	log.Debug("Get report")
+
 	report := []*models.Report{}
 	for rows.Next() {
 		var item models.Report

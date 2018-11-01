@@ -20,6 +20,7 @@ func GetCabins(c *gin.Context) {
 	}
 	defer rows.Close()
 
+	log.Debug("Get cabins")
 	cabins := []*models.Cabin{}
 	for rows.Next() {
 		var cabin models.Cabin
@@ -53,6 +54,8 @@ func UpdateCabin(c *gin.Context) {
 		return
 	}
 
+	log.Debug("Get cabin status ID")
+
 	tx, err := database.DB.Begin()
 	stmt, err := database.DB.Prepare("UPDATE public.cabins SET fk_status= $1 WHERE id = $2;")
 	if err != nil {
@@ -72,7 +75,7 @@ func UpdateCabin(c *gin.Context) {
 		c.AbortWithError(400, err)
 		return
 	}
-
+	log.Debug("Update cabin status")
 	tx.Commit()
 	//url := location.Get(c)
 	//c.Header("Location", fmt.Sprintf("%s%s/%s", url, c.Request.URL, fmt.Sprintf("%d", lastID)))

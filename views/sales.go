@@ -33,6 +33,8 @@ func CreateSale(c *gin.Context) {
 		return
 	}
 
+	log.Debug("Create sale")
+
 	for _, articule := range sale.SaleArticules {
 		_, err = tx.Exec("INSERT INTO sale_item(fk_sale, fk_item, price, amount) VALUES ($1, $2, $3, $4)", saleID, articule.ArticuleID, articule.Price, articule.Amount)
 		if err != nil {
@@ -43,6 +45,7 @@ func CreateSale(c *gin.Context) {
 			return
 		}
 	}
+
 	tx.Commit()
 
 	c.Data(201, gin.MIMEJSON, nil)

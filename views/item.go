@@ -17,6 +17,7 @@ func GetSaleItems(c *gin.Context) {
 	}
 	defer rows.Close()
 
+	log.Debug("Get sale items")
 	items := []*models.Item{}
 	for rows.Next() {
 		var item models.Item

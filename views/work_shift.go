@@ -27,6 +27,7 @@ func CreateWorkShift(c *gin.Context) {
 		c.AbortWithError(http.StatusBadRequest, errors.New("Cant get user"))
 		return
 	}
+	log.Debug("Get user id")
 	log.Debug(userID)
 
 	tx, err := database.DB.Begin()
@@ -96,6 +97,8 @@ func GetWorkShifts(c *gin.Context) {
 		log.Fatal(err)
 	}
 	defer rows.Close()
+
+	log.Debug("Get workShifts")
 
 	workShifts := []*models.UserWorkShift{}
 	for rows.Next() {

@@ -37,7 +37,7 @@ func Authenticate(c *gin.Context) {
 		c.JSON(401, gin.H{"message": "Unauthorized"})
 		return
 	}
-
+	log.Debug("Authenticating user")
 	var user models.User
 
 	err = database.DB.QueryRow("SELECT username, first_name, last_name, password FROM users WHERE username = $1", requestUser.Username).Scan(&user.Username, &user.FirstName, &user.LastName, &user.Password)
@@ -46,7 +46,7 @@ func Authenticate(c *gin.Context) {
 		c.AbortWithError(500, err)
 		return
 	}
-
+	log.Debug("User info gotten")
 	roles, err := database.DB.Query("SELECT r.name FROM users u,user_roles ur, roles r WHERE u.id = ur.fk_user AND r.id = ur.fk_role AND u.username = $1", user.Username)
 
 	if err != nil {
@@ -55,6 +55,8 @@ func Authenticate(c *gin.Context) {
 		return
 	}
 	defer roles.Close()
+
+	log.Debug("User roles gotten")
 
 	rolesArray := []string{}
 
@@ -81,6 +83,8 @@ func Authenticate(c *gin.Context) {
 	claims["last_name"] = user.LastName
 	claims["roles"] = rolesArray
 	tokenString, err := utils.GenerateToken(claims)
+
+	log.Debug("Generating token")
 
 	if err != nil {
 		c.JSON(500, gin.H{"message": "Could not generate token"})

@@ -34,6 +34,8 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
+	log.Debug("Generate password")
+
 	tx, err := database.DB.Begin()
 	stmt, err := tx.Prepare("INSERT INTO users (username, first_name, last_name, password, status) VALUES ($1, $2, $3, $4, $5)")
 	if err != nil {
@@ -68,6 +70,8 @@ func GetUsers(c *gin.Context) {
 	}
 	defer rows.Close()
 
+	log.Debug("Get users")
+
 	users := []*models.User{}
 	for rows.Next() {
 		var user models.User
@@ -90,6 +94,8 @@ func GetUsers(c *gin.Context) {
 			c.AbortWithError(500, err) //errors.New("Cant get rent"))
 			return
 		}
+
+		log.Debug("Get roles")
 
 		for rows.Next() {
 			role := models.Role{}

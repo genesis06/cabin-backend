@@ -27,6 +27,8 @@ func GetRents(c *gin.Context) {
 	}
 	defer rows.Close()
 
+	log.Debug("Get last rents")
+
 	rents := []*models.RentLostStuff{}
 	for rows.Next() {
 		var rent models.RentLostStuff
@@ -68,6 +70,7 @@ func GetNextCheckouts(c *gin.Context) {
 	}
 	defer rows.Close()
 
+	log.Debug("Get next checkouts")
 	rents := []*models.NextCheckoutRents{}
 	for rows.Next() {
 		var rent models.NextCheckoutRents
@@ -103,6 +106,7 @@ func CreateRent(c *gin.Context) {
 		return
 	}
 
+	log.Debug("Get contracted time")
 	log.Println("timee: " + contractedTimeID)
 
 	tx, err := database.DB.Begin()
@@ -129,6 +133,7 @@ func CreateRent(c *gin.Context) {
 		}
 	}
 
+	log.Debug("Create rent!!")
 	tx.Commit()
 
 	c.Data(201, gin.MIMEJSON, nil)
@@ -154,6 +159,7 @@ func GetRent(c *gin.Context) {
 		return
 	}
 
+	log.Debug("Get rent info")
 	vehicules := []models.Vehicule{}
 
 	rows, err := database.DB.Query("SELECT v.id, v.v_type, v.license_plate FROM vehicules v INNER JOIN rents r ON r.id = v.fk_rent INNER JOIN cabins c ON c.id = r.fk_cabin WHERE r.id = $1", rent.ID)
@@ -161,6 +167,7 @@ func GetRent(c *gin.Context) {
 		c.AbortWithError(500, err) //errors.New("Cant get rent"))
 		return
 	}
+	log.Debug("Get vehicules")
 
 	for rows.Next() {
 		vehicule := models.Vehicule{}
@@ -210,7 +217,7 @@ func UpdateRent(c *gin.Context) {
 		c.AbortWithError(400, err)
 		return
 	}
-
+	log.Debug("Update rent")
 	for _, vehicule := range rent.Vehicules {
 
 		if vehicule.ID == 0 {
@@ -245,6 +252,7 @@ func UpdateRent(c *gin.Context) {
 					return
 				}
 			}
+			log.Debug("Update vehicules")
 		}
 
 		/**/
@@ -277,6 +285,7 @@ func PostCheckOut(c *gin.Context) {
 		return
 	}
 
+	log.Debug("Get rent id")
 	var checkout interface{}
 
 	err = database.DB.QueryRow("SELECT check_out FROM rents WHERE id = $1", rentID).Scan(&checkout)
@@ -290,8 +299,7 @@ func PostCheckOut(c *gin.Context) {
 		return
 	}
 
-	log.Println("checkout ")
-	log.Println(checkout)
+	log.Debug("Exist rent")
 
 	tx, err := database.DB.Begin()
 	stmt, err := database.DB.Prepare("UPDATE rents SET check_out = $1 WHERE id = $2;")
@@ -312,7 +320,7 @@ func PostCheckOut(c *gin.Context) {
 		c.AbortWithError(400, err)
 		return
 	}
-
+	log.Debug("Checkout cabin")
 	tx.Commit()
 	//url := location.Get(c)
 	//c.Header("Location", fmt.Sprintf("%s%s/%s", url, c.Request.URL, fmt.Sprintf("%d", lastID)))
@@ -352,6 +360,8 @@ func PostLostStuff(c *gin.Context) {
 		return
 	}
 
+	log.Debug("Update last rents")
+
 	log.Println(rent.Vehicules)
 	for _, vehicule := range rent.Vehicules {
 
@@ -387,7 +397,7 @@ func PostLostStuff(c *gin.Context) {
 					return
 				}
 			}
-
+			log.Debug("Update vehicules")
 		}
 
 		/**/
