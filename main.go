@@ -40,6 +40,7 @@ func GetEngine() *gin.Engine {
 		v1.GET("/workShifts", views.GetWorkShifts)
 		v1.GET("/report", views.GetReport)
 		v1.PUT("/workShiftsType", views.UpdateWorkShiftType)
+		v1.GET("/nextCheckouts", views.GetNextCheckouts)
 	}
 	cabins := v1.Group("/cabins")
 	{
@@ -47,7 +48,7 @@ func GetEngine() *gin.Engine {
 		cabins.PUT("/:id", views.UpdateCabin)
 		cabins.PUT("/:id/rents/checkout", views.PostCheckOut)
 	}
-	rents := v1.Group("rents")
+	rents := v1.Group("/rents")
 	{
 
 		rents.GET("/:id/vehicules", views.GetVehicules)

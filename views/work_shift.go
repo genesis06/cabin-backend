@@ -80,7 +80,7 @@ func GetWorkShifts(c *gin.Context) {
 	sqlString := "SELECT ws.id, u.username, u.first_name, u.last_name, ws.money_received, ws.money_delivered, ws.datetime, ws.notes FROM work_shifts ws INNER JOIN users u ON u.id = ws.fk_user "
 
 	if c.Query("fromDate") != "" && c.Query("toDate") != "" {
-		sqlString = sqlString + "WHERE ws.datetime > '" + c.Query("fromDate") + "' and ws.datetime < '" + c.Query("toDate") + "' "
+		sqlString = sqlString + "WHERE ws.datetime >= '" + c.Query("fromDate") + "' and ws.datetime <= '" + c.Query("toDate") + "' "
 	}
 
 	sqlString = sqlString + "ORDER BY ws.id DESC"

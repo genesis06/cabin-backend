@@ -43,6 +43,47 @@ func GetRents(c *gin.Context) {
 	c.JSON(200, rents)
 }
 
+func GetNextCheckouts(c *gin.Context) {
+
+	sqlString := "SELECT c.cabin_number, r.check_in, r.estimated_checkout, ct.quantity FROM rents r INNER JOIN contracted_times ct ON ct.id = r.fk_contracted_time INNER JOIN cabins c ON c.id = r.fk_cabin" // WHERE r.estimated_checkout > '2018-11-01T06:00:00.000Z' and r.estimated_checkout < '2018-11-01T07:00:00.000Z' ORDER BY r.estimated_checkout"
+
+	if c.Query("fromDate") != "" && c.Query("toDate") != "" {
+		sqlString = sqlString + " WHERE r.check_out IS NULL and r.estimated_checkout >= '" + c.Query("fromDate") + "' and r.estimated_checkout <= '" + c.Query("toDate") + "'"
+	} else {
+		if c.Query("fromDate") == "" && c.Query("toDate") == "" {
+			c.AbortWithError(http.StatusBadRequest, errors.New("Missing fromDate and toDate query param"))
+			return
+		} else if c.Query("fromDate") == "" {
+			c.AbortWithError(http.StatusBadRequest, errors.New("Missing fromDate query param"))
+			return
+		} else if c.Query("toDate") == "" {
+			c.AbortWithError(http.StatusBadRequest, errors.New("Missing toDate query param"))
+			return
+		}
+	}
+
+	rows, err := database.DB.Query(sqlString)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	rents := []*models.NextCheckoutRents{}
+	for rows.Next() {
+		var rent models.NextCheckoutRents
+		err := rows.Scan(&rent.CabinNumber, &rent.CheckIn, &rent.EstimatedCheckout, &rent.ContratedTime)
+		if err != nil {
+			log.Fatal(err)
+		}
+		rents = append(rents, &rent)
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Fatal(err)
+	}
+	c.JSON(200, rents)
+}
+
 // Create rent
 func CreateRent(c *gin.Context) {
 	var rent models.Rent
@@ -67,7 +108,7 @@ func CreateRent(c *gin.Context) {
 	tx, err := database.DB.Begin()
 
 	var rentID int
-	_ = tx.QueryRow("INSERT INTO rents( check_in, observations, necesary_repairs, fk_cabin, fk_contracted_time, total) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id", rent.CheckIn, rent.Observations, rent.NecessaryRepairs, rent.CabinID, contractedTimeID, price).Scan(&rentID)
+	_ = tx.QueryRow("INSERT INTO rents( check_in, observations, necesary_repairs, fk_cabin, fk_contracted_time, total, sales_check, estimated_checkout) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id", rent.CheckIn, rent.Observations, rent.NecessaryRepairs, rent.CabinID, contractedTimeID, price, rent.SalesCheck, rent.EstimatedCheckout).Scan(&rentID)
 
 	if err != nil {
 		log.Println("ERRORRR 1")
@@ -99,7 +140,7 @@ func GetRent(c *gin.Context) {
 
 	var rent models.Rent
 
-	err := database.DB.QueryRow("SELECT r.id, r.fk_cabin, r.check_in, r.check_out, r.observations, r.necesary_repairs, ct.quantity, r.lost_stuff FROM rents r INNER JOIN contracted_times ct ON r.fk_contracted_time = ct.id INNER JOIN cabins c ON c.id = r.fk_cabin WHERE c.cabin_number = $1 ORDER BY r.id DESC LIMIT 1", cabinID).Scan(&rent.ID, &rent.CabinID, &rent.CheckIn, &rent.CheckOut, &rent.Observations, &rent.NecessaryRepairs, &rent.ContratedTime, &rent.LostStuff)
+	err := database.DB.QueryRow("SELECT r.id, r.fk_cabin, r.check_in, r.check_out, r.observations, r.necesary_repairs, ct.quantity, r.lost_stuff, r.sales_check FROM rents r INNER JOIN contracted_times ct ON r.fk_contracted_time = ct.id INNER JOIN cabins c ON c.id = r.fk_cabin WHERE c.cabin_number = $1 ORDER BY r.id DESC LIMIT 1", cabinID).Scan(&rent.ID, &rent.CabinID, &rent.CheckIn, &rent.CheckOut, &rent.Observations, &rent.NecessaryRepairs, &rent.ContratedTime, &rent.LostStuff, &rent.SalesCheck)
 	if err != nil {
 		c.AbortWithError(500, err) //errors.New("Cant get rent"))
 		return
@@ -151,7 +192,7 @@ func UpdateRent(c *gin.Context) {
 	}
 
 	tx, err := database.DB.Begin()
-	stmt, err := database.DB.Prepare("UPDATE rents SET observations=$1, necesary_repairs=$2 WHERE id = $3;")
+	stmt, err := database.DB.Prepare("UPDATE rents SET observations=$1, necesary_repairs=$2, sales_check = $3 WHERE id = $4;")
 	if err != nil {
 		tx.Rollback()
 		log.Error(err)
@@ -161,7 +202,7 @@ func UpdateRent(c *gin.Context) {
 		return
 	}
 
-	_, err = stmt.Exec(rent.Observations, rent.NecessaryRepairs, rentID)
+	_, err = stmt.Exec(rent.Observations, rent.NecessaryRepairs, rent.SalesCheck, rentID)
 	if err != nil {
 		tx.Rollback()
 		log.Error(err)
@@ -293,7 +334,7 @@ func PostLostStuff(c *gin.Context) {
 	log.Println(rent)
 
 	tx, err := database.DB.Begin()
-	stmt, err := database.DB.Prepare("UPDATE rents SET lost_stuff = $1, observations = $2, necesary_repairs = $3 WHERE id = $4;")
+	stmt, err := database.DB.Prepare("UPDATE rents SET lost_stuff = $1, observations = $2, necesary_repairs = $3, sales_check = $4 WHERE id = $5;")
 	if err != nil {
 		tx.Rollback()
 		log.Error(err)
@@ -302,7 +343,7 @@ func PostLostStuff(c *gin.Context) {
 
 		return
 	}
-	_, err = stmt.Exec(rent.LostStuff, rent.Observations, rent.NecessaryRepairs, rentID)
+	_, err = stmt.Exec(rent.LostStuff, rent.Observations, rent.NecessaryRepairs, rent.SalesCheck, rentID)
 	if err != nil {
 		tx.Rollback()
 		log.Error(err)
