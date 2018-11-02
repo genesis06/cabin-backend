@@ -41,6 +41,7 @@ func GetEngine() *gin.Engine {
 		v1.GET("/report", views.GetReport)
 		v1.PUT("/workShiftsType", views.UpdateWorkShiftType)
 		v1.GET("/nextCheckouts", views.GetNextCheckouts)
+		v1.GET("/vehiculeTypes", views.GetVehiculeTypes)
 	}
 	cabins := v1.Group("/cabins")
 	{

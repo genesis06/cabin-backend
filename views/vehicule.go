@@ -42,3 +42,29 @@ func GetVehicules(c *gin.Context) {
 	c.JSON(200, vehicules)
 
 }
+
+func GetVehiculeTypes(c *gin.Context) {
+	sqlString := "SELECT id, name FROM vehicule_types;"
+
+	rows, err := database.DB.Query(sqlString)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	vehicules := []*models.VehiculeType{}
+	for rows.Next() {
+		var vehicule models.VehiculeType
+		err := rows.Scan(&vehicule.ID, &vehicule.Name)
+		if err != nil {
+			log.Fatal(err)
+		}
+		vehicules = append(vehicules, &vehicule)
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	c.JSON(200, vehicules)
+}
