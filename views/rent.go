@@ -123,7 +123,7 @@ func CreateRent(c *gin.Context) {
 	}
 
 	for _, vehicule := range rent.Vehicules {
-		_, err = tx.Exec("INSERT INTO vehicules ( v_type, license_plate, fk_rent) VALUES ($1, $2, $3)", vehicule.Type, vehicule.LicensePlate, rentID)
+		_, err = tx.Exec("INSERT INTO rent_vehicules ( fk_vehicule_type, license_plate, fk_rent) VALUES ($1, $2, $3)", vehicule.Type, vehicule.LicensePlate, rentID)
 		if err != nil {
 			log.Println("ERRORRR 2")
 			tx.Rollback()
@@ -162,7 +162,7 @@ func GetRent(c *gin.Context) {
 	log.Debug("Get rent info")
 	vehicules := []models.Vehicule{}
 
-	rows, err := database.DB.Query("SELECT v.id, v.v_type, v.license_plate FROM vehicules v INNER JOIN rents r ON r.id = v.fk_rent INNER JOIN cabins c ON c.id = r.fk_cabin WHERE r.id = $1", rent.ID)
+	rows, err := database.DB.Query("SELECT v.id, v.fk_vehicule_type, v.license_plate FROM rent_vehicules v INNER JOIN rents r ON r.id = v.fk_rent INNER JOIN cabins c ON c.id = r.fk_cabin WHERE r.id = $1", rent.ID)
 	if err != nil {
 		c.AbortWithError(500, err) //errors.New("Cant get rent"))
 		return
@@ -222,7 +222,7 @@ func UpdateRent(c *gin.Context) {
 
 		if vehicule.ID == 0 {
 			log.Println("Insertó")
-			_, err = tx.Exec("INSERT INTO vehicules ( v_type, license_plate, fk_rent) VALUES ($1, $2, $3)", vehicule.Type, vehicule.LicensePlate, rentID)
+			_, err = tx.Exec("INSERT INTO rent_vehicules ( fk_vehicule_type, license_plate, fk_rent) VALUES ($1, $2, $3)", vehicule.Type, vehicule.LicensePlate, rentID)
 			if err != nil {
 				log.Println("ERRORRR 2")
 				tx.Rollback()
@@ -233,7 +233,7 @@ func UpdateRent(c *gin.Context) {
 		} else {
 			if vehicule.Deleted == false {
 				log.Println("Actualizó")
-				_, err = tx.Exec("UPDATE vehicules SET v_type = $1, license_plate = $2 WHERE id = $3;", vehicule.Type, vehicule.LicensePlate, vehicule.ID)
+				_, err = tx.Exec("UPDATE rent_vehicules SET fk_vehicule_type = $1, license_plate = $2 WHERE id = $3;", vehicule.Type, vehicule.LicensePlate, vehicule.ID)
 				if err != nil {
 					log.Println("ERRORRR 2")
 					tx.Rollback()
@@ -243,7 +243,7 @@ func UpdateRent(c *gin.Context) {
 				}
 			} else {
 				log.Println("Eliminó")
-				_, err = tx.Exec("DELETE FROM vehicules WHERE id = $1;", vehicule.ID)
+				_, err = tx.Exec("DELETE FROM rent_vehicules WHERE id = $1;", vehicule.ID)
 				if err != nil {
 					log.Println("ERRORRR 2")
 					tx.Rollback()
@@ -321,6 +321,45 @@ func PostCheckOut(c *gin.Context) {
 		return
 	}
 	log.Debug("Checkout cabin")
+	for _, vehicule := range cabinCheckout.Vehicules {
+
+		if vehicule.ID == 0 {
+			log.Println("Insertó")
+			_, err = tx.Exec("INSERT INTO rent_vehicules ( fk_vehicule_type, license_plate, fk_rent) VALUES ($1, $2, $3)", vehicule.Type, vehicule.LicensePlate, rentID)
+			if err != nil {
+				log.Println("ERRORRR 2")
+				tx.Rollback()
+				log.Println(err)
+				c.AbortWithError(http.StatusBadRequest, err)
+				return
+			}
+		} else {
+			if vehicule.Deleted == false {
+				log.Println("Actualizó")
+				_, err = tx.Exec("UPDATE rent_vehicules SET fk_vehicule_type = $1, license_plate = $2 WHERE id = $3;", vehicule.Type, vehicule.LicensePlate, vehicule.ID)
+				if err != nil {
+					log.Println("ERRORRR 2")
+					tx.Rollback()
+					log.Println(err)
+					c.AbortWithError(http.StatusBadRequest, err)
+					return
+				}
+			} else {
+				log.Println("Eliminó")
+				_, err = tx.Exec("DELETE FROM rent_vehicules WHERE id = $1;", vehicule.ID)
+				if err != nil {
+					log.Println("ERRORRR 2")
+					tx.Rollback()
+					log.Println(err)
+					c.AbortWithError(http.StatusBadRequest, err)
+					return
+				}
+			}
+			log.Debug("Update vehicules")
+		}
+
+		/**/
+	}
 	tx.Commit()
 	//url := location.Get(c)
 	//c.Header("Location", fmt.Sprintf("%s%s/%s", url, c.Request.URL, fmt.Sprintf("%d", lastID)))
@@ -367,7 +406,7 @@ func PostLostStuff(c *gin.Context) {
 
 		if vehicule.ID == 0 {
 			log.Println("Insertó")
-			_, err = tx.Exec("INSERT INTO vehicules ( v_type, license_plate, fk_rent) VALUES ($1, $2, $3)", vehicule.Type, vehicule.LicensePlate, rentID)
+			_, err = tx.Exec("INSERT INTO rent_vehicules ( fk_vehicule_type, license_plate, fk_rent) VALUES ($1, $2, $3)", vehicule.Type, vehicule.LicensePlate, rentID)
 			if err != nil {
 				log.Println("ERRORRR 2")
 				tx.Rollback()
@@ -378,7 +417,7 @@ func PostLostStuff(c *gin.Context) {
 		} else {
 			if vehicule.Deleted == false {
 				log.Println("Actualizó")
-				_, err = tx.Exec("UPDATE vehicules SET v_type = $1, license_plate = $2 WHERE id = $3;", vehicule.Type, vehicule.LicensePlate, vehicule.ID)
+				_, err = tx.Exec("UPDATE rent_vehicules SET fk_vehicule_type = $1, license_plate = $2 WHERE id = $3;", vehicule.Type, vehicule.LicensePlate, vehicule.ID)
 				if err != nil {
 					log.Println("ERRORRR 2")
 					tx.Rollback()
@@ -388,7 +427,7 @@ func PostLostStuff(c *gin.Context) {
 				}
 			} else {
 				log.Println("Eliminó")
-				_, err = tx.Exec("DELETE FROM vehicules WHERE id = $1;", vehicule.ID)
+				_, err = tx.Exec("DELETE FROM rent_vehicules WHERE id = $1;", vehicule.ID)
 				if err != nil {
 					log.Println("ERRORRR 2")
 					tx.Rollback()

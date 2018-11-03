@@ -15,7 +15,7 @@ func GetVehicules(c *gin.Context) {
 
 	log.Println(rentID)
 
-	sqlString := "SELECT id, v_type, license_plate FROM vehicules WHERE fk_rent = " + rentID
+	sqlString := "SELECT id, fk_vehicule_type, license_plate FROM rent_vehicules WHERE fk_rent = " + rentID
 
 	rows, err := database.DB.Query(sqlString)
 	if err != nil {
