@@ -84,7 +84,7 @@ func GetWorkShifts(c *gin.Context) {
 		sqlString = sqlString + "WHERE ws.datetime >= '" + c.Query("fromDate") + "' and ws.datetime <= '" + c.Query("toDate") + "' "
 	}
 
-	sqlString = sqlString + "ORDER BY ws.id DESC"
+	sqlString = sqlString + "OR ws.money_delivered=0 ORDER BY ws.id DESC"
 	/*
 		if limit != "" {
 			sqlString += "LIMIT " + limit

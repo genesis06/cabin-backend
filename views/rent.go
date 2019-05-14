@@ -50,7 +50,7 @@ func GetNextCheckouts(c *gin.Context) {
 	sqlString := "SELECT c.cabin_number, r.check_in, r.estimated_checkout, ct.quantity FROM rents r INNER JOIN contracted_times ct ON ct.id = r.fk_contracted_time INNER JOIN cabins c ON c.id = r.fk_cabin" // WHERE r.estimated_checkout > '2018-11-01T06:00:00.000Z' and r.estimated_checkout < '2018-11-01T07:00:00.000Z' ORDER BY r.estimated_checkout"
 
 	if c.Query("fromDate") != "" && c.Query("toDate") != "" {
-		sqlString = sqlString + " WHERE r.check_out IS NULL and r.estimated_checkout >= '" + c.Query("fromDate") + "' and r.estimated_checkout <= '" + c.Query("toDate") + "'"
+		sqlString = sqlString + " WHERE (r.check_out IS NULL and r.estimated_checkout >= '" + c.Query("fromDate") + "' and r.estimated_checkout <= '" + c.Query("toDate") + "') OR r.check_out IS NULL and r.estimated_checkout <= now()"
 	} else {
 		if c.Query("fromDate") == "" && c.Query("toDate") == "" {
 			c.AbortWithError(http.StatusBadRequest, errors.New("Missing fromDate and toDate query param"))
